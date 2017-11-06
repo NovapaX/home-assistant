@@ -76,8 +76,8 @@ def request_configuration(hass, config, host, name, allow_tradfri_groups):
         api_factory = APIFactory(host, psk_id=identity, loop=hass.loop)
 
         # Need To Fix: currently entering a wrong security code sends
-        # pytradfri aiocoap API into an entless loop.
-        # posibly because of non standard response from gateway
+        # pytradfri aiocoap API into an endless loop.
+        # possibly because of non standard response from gateway
         # but there's no clear Error/Exception being raised.
         # the only thing that shows up in the logs is an OSError
         try:
@@ -116,7 +116,7 @@ def request_configuration(hass, config, host, name, allow_tradfri_groups):
         title = "{} ({})".format(title, name)
 
     security_code_field = {'id': 'security_code', 'name': 'Security Code'}
-    checbox_field = {'id': 'allow_tradfri_groups',
+    checkbox_field = {'id': 'allow_tradfri_groups',
                      'name': 'use Tradfri groups',
                      'type': 'checkbox',
                      'checked': allow_tradfri_groups}
@@ -125,7 +125,7 @@ def request_configuration(hass, config, host, name, allow_tradfri_groups):
         description='Please enter the security code written at the bottom of '
                     'your IKEA Trådfri Gateway.',
         submit_caption="Confirm",
-        fields=[security_code_field, checbox_field]
+        fields=[security_code_field, checkbox_field]
         )
 
 
@@ -213,6 +213,23 @@ def _setup_gateway(hass, hass_config, host, name,
             title='IKEA Trådfri setup error'
             )
         return False
+    except Exception as ex:
+        if str(ex).startswith("[Errno -1] Unknown error -1"):
+            _LOGGER.error("="*79)
+            _LOGGER.error("invalid key for Trådfri!"
+                          " please clear {}".format(CONFIG_FILE))
+
+            # alternatively, more drastic measures:
+            # _LOGGER.error("invalid key for Trådfri!"
+            #               " removing {}".format(hass.config.path(CONFIG_FILE)))
+            # os.remove(hass.config.path(CONFIG_FILE))
+
+            _LOGGER.error("="*79)
+            _LOGGER.exception(str(ex))
+
+            # TODO kill subprocess somehow
+
+            return False
 
     gateway_id = gateway_info_result.id
     hass.data.setdefault(KEY_API, {})
@@ -244,8 +261,13 @@ def _read_config(hass):
         return {}
 
     with open(path) as f_handle:
-        # Guard against empty file
-        return json.loads(f_handle.read() or '{}')
+        try:
+            data = json.loads(f_handle.read())
+        except Exception as ex:
+            _LOGGER.exception(str(ex))
+            data = '{}'
+        finally:
+            return data
 
 
 def _write_config(hass, config):

@@ -117,9 +117,9 @@ def request_configuration(hass, config, host, name, allow_tradfri_groups):
 
     security_code_field = {'id': 'security_code', 'name': 'Security Code'}
     checkbox_field = {'id': 'allow_tradfri_groups',
-                     'name': 'use Tradfri groups',
-                     'type': 'checkbox',
-                     'checked': allow_tradfri_groups}
+                      'name': 'use Tradfri groups',
+                      'type': 'checkbox',
+                      'checked': allow_tradfri_groups}
     instance = configurator.request_config(
         title, configuration_callback,
         description='Please enter the security code written at the bottom of '

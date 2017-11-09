@@ -59,7 +59,7 @@ def request_configuration(hass, config, host, name, allow_tradfri_groups):
         """Handle the submitted configuration."""
         try:
             from pytradfri.api.aiocoap_api import APIFactory
-            from pytradfri import RequestError
+            from pytradfri import RequestTimeout, RequestError
         except ImportError:
             _LOGGER.exception("Looks like something isn't installed!")
             return
@@ -82,6 +82,10 @@ def request_configuration(hass, config, host, name, allow_tradfri_groups):
         # the only thing that shows up in the logs is an OSError
         try:
             token = yield from api_factory.generate_psk(security_code)
+        except RequestTimeout:
+            hass.async_add_job(configurator.notify_errors, instance,
+                               "Could not connect to gateway.")
+            return
         except RequestError:
             hass.async_add_job(configurator.notify_errors, instance,
                                "Security Code not accepted.")

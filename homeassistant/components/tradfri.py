@@ -129,7 +129,7 @@ def request_configuration(hass, config, host, name, allow_tradfri_groups):
     instance = configurator.request_config(
         title, configuration_callback,
         description='Please enter the security code written at the bottom of '
-                    'your IKEA Trådfri Gateway.<br>This code consist of 16 '
+                    'your IKEA Trådfri Gateway. This code consist of 16 '
                     'alphanumeric characters',
         submit_caption="Confirm",
         fields=[security_code_field, checkbox_field]

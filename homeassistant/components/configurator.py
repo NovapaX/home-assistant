@@ -30,6 +30,7 @@ ATTR_FIELDS = 'fields'
 ATTR_LINK_NAME = 'link_name'
 ATTR_LINK_URL = 'link_url'
 ATTR_SUBMIT_CAPTION = 'submit_caption'
+ATTR_IS_CONFIGURING = 'is_configuring'
 
 DOMAIN = 'configurator'
 
@@ -118,6 +119,26 @@ def request_done(hass, request_id):
     ).result()
 
 
+@bind_hass
+@async_callback
+def async_set_configuring(hass, request_id, is_configuring=True):
+    """Mark a configuration request as configuring/busy."""
+    try:
+        hass.data[DATA_REQUESTS][request_id].async_set_configuring(
+            request_id, is_configuring)
+    except KeyError:
+        # If request_id does not exist
+        pass
+
+
+@bind_hass
+def set_configuring(hass, request_id, is_configuring=True):
+    """Mark a configuration request as configuring/busy."""
+    return run_callback_threadsafe(
+        hass.loop, async_set_configuring, hass, request_id, is_configuring
+    ).result()
+
+
 @asyncio.coroutine
 def async_setup(hass, config):
     """Set up the configurator component."""
@@ -184,6 +205,21 @@ class Configurator(object):
 
         new_data = dict(state.attributes)
         new_data[ATTR_ERRORS] = error
+
+        self.hass.states.async_set(entity_id, STATE_CONFIGURE, new_data)
+
+    @async_callback
+    def async_set_configuring(self, request_id, configuring_state=True):
+        """Mark a configuration request as configuring/busy (spinner)"""
+        if not self._validate_request_id(request_id):
+            return
+
+        entity_id = self._requests[request_id][0]
+
+        state = self.hass.states.get(entity_id)
+
+        new_data = dict(state.attributes)
+        new_data[ATTR_IS_CONFIGURING] = configuring_state
 
         self.hass.states.async_set(entity_id, STATE_CONFIGURE, new_data)
 

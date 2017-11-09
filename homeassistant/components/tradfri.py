@@ -150,7 +150,7 @@ def async_setup(hass, config):
 
         # fallback: older setups had IP-address as the key for known_hosts
         if host not in known_hosts:
-            host = info.get('host', 'not-found')
+            host = info.get('host', host)
 
         if host in known_hosts:
             # fallback for old config style

@@ -54,6 +54,7 @@ def request_configuration(hass, config, host, name, allow_tradfri_groups):
 
     @asyncio.coroutine
     def configuration_callback(callback_data):
+
         """Handle the submitted configuration."""
         try:
             from pytradfri.api.aiocoap_api import APIFactory
@@ -62,6 +63,8 @@ def request_configuration(hass, config, host, name, allow_tradfri_groups):
         except ImportError:
             _LOGGER.exception("Looks like something isn't installed!")
             return
+
+        hass.async_add_job(configurator.set_configuring, instance, True)
 
         security_code = callback_data.get('security_code')
         allow_tradfri_groups = callback_data.get('allow_tradfri_groups',
@@ -89,6 +92,8 @@ def request_configuration(hass, config, host, name, allow_tradfri_groups):
             hass.async_add_job(configurator.notify_errors, instance,
                                "Security Code not accepted.")
             return
+        finally:
+            hass.async_add_job(configurator.set_configuring, instance, False)
 
         res = yield from _setup_gateway(hass, config, host, name,
                                         identity, token,

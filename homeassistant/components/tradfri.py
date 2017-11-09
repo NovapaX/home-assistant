@@ -8,10 +8,8 @@ import asyncio
 import json
 import logging
 import os
-import uuid
 
 import voluptuous as vol
-import async_timeout
 
 import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers import discovery
@@ -60,6 +58,7 @@ def request_configuration(hass, config, host, name, allow_tradfri_groups):
         try:
             from pytradfri.api.aiocoap_api import APIFactory
             from pytradfri import RequestTimeout, RequestError
+            from uuid import uuid4
         except ImportError:
             _LOGGER.exception("Looks like something isn't installed!")
             return
@@ -71,7 +70,7 @@ def request_configuration(hass, config, host, name, allow_tradfri_groups):
         # use an unique identity to pair with gateway on every config attempt
         # using the same id would make it unable to pair with a
         # new (or another) hass instance.
-        identity = uuid.uuid4().hex
+        identity = uuid4().hex
 
         api_factory = APIFactory(host, psk_id=identity, loop=hass.loop)
 

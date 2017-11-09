@@ -199,7 +199,7 @@ class Configurator(object):
         if not self._validate_request_id(request_id):
             return
 
-        _set_state_attribute(self, request_id, ATTR_ERRORS, error)
+        self._set_state_attribute(request_id, ATTR_ERRORS, error)
 
     @async_callback
     def async_set_configuring(self, request_id, is_configuring=True):
@@ -207,8 +207,8 @@ class Configurator(object):
         if not self._validate_request_id(request_id):
             return
 
-        _set_state_attribute(self, request_id,
-                             ATTR_IS_CONFIGURING, is_configuring)
+        self._set_state_attribute(request_id, ATTR_IS_CONFIGURING,
+                                              is_configuring)
 
     @async_callback
     def async_request_done(self, request_id):
@@ -250,7 +250,7 @@ class Configurator(object):
         entity_id = self._requests[request_id][0]
         state = self.hass.states.get(entity_id)
         new_data = dict(state.attributes)
-        new_data[attribute] = valu
+        new_data[attribute] = value
         self.hass.states.async_set(entity_id, STATE_CONFIGURE, new_data)
 
     def _generate_unique_id(self):

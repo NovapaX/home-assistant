@@ -209,7 +209,7 @@ class Configurator(object):
         self.hass.states.async_set(entity_id, STATE_CONFIGURE, new_data)
 
     @async_callback
-    def async_set_configuring(self, request_id, configuring_state=True):
+    def async_set_configuring(self, request_id, is_configuring=True):
         """Mark a configuration request as configuring/busy (spinner)"""
         if not self._validate_request_id(request_id):
             return
@@ -219,7 +219,7 @@ class Configurator(object):
         state = self.hass.states.get(entity_id)
 
         new_data = dict(state.attributes)
-        new_data[ATTR_IS_CONFIGURING] = configuring_state
+        new_data[ATTR_IS_CONFIGURING] = is_configuring
 
         self.hass.states.async_set(entity_id, STATE_CONFIGURE, new_data)
 
